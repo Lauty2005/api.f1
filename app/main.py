@@ -1,34 +1,36 @@
 import os
 import shutil
 import uuid
+from datetime import date
+from typing import List, Optional
+
 from fastapi import FastAPI, HTTPException, Depends, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
+from fastapi.responses import FileResponse # <--- IMPORTANTE PARA SERVIR EL HTML
 from pydantic import BaseModel
 from sqlalchemy import create_engine, Column, Integer, String, Date, Float, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker, Session, relationship
-from typing import List, Optional
-from datetime import date
 
-# Obtener la ruta exacta donde está este archivo main.py
+# --- CONFIGURACIÓN DE DIRECTORIOS A PRUEBA DE BALAS ---
+# 1. Obtenemos la ruta absoluta de DONDE está este archivo main.py
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-# Definir la carpeta de imágenes usando la ruta absoluta
+# 2. Definimos la carpeta static dentro de esa ruta
 STATIC_DIR = os.path.join(BASE_DIR, "static")
-IMAGEDIR = os.path.join(STATIC_DIR, "images")
+IMAGES_DIR = os.path.join(STATIC_DIR, "images")
 
-# Crear las carpetas si no existen (Recursivo para asegurar)
-os.makedirs(IMAGEDIR, exist_ok=True)
+# 3. Creamos las carpetas si no existen (esto evita el error 500 por "File not found")
+os.makedirs(IMAGES_DIR, exist_ok=True)
 
-# --- CONFIGURACIÓN BASE DE DATOS ---
+# --- BASE DE DATOS ---
 SQLALCHEMY_DATABASE_URL = "sqlite:///./f1_database.db"
 engine = create_engine(SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False})
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
-# --- CONSTANTES ---
+# --- PUNTOS ---
 POINTS_RACE = {1: 25, 2: 18, 3: 15, 4: 12, 5: 10, 6: 8, 7: 6, 8: 4, 9: 2, 10: 1}
 POINTS_SPRINT = {1: 8, 2: 7, 3: 6, 4: 5, 5: 4, 6: 3, 7: 2, 8: 1}
 
@@ -141,25 +143,29 @@ def get_db():
     finally: db.close()
 
 def save_upload_file(upload_file: UploadFile) -> str:
+    # Si no hay archivo, devolvemos None (sin error)
     if not upload_file or not upload_file.filename:
         return None
-    
+
     try:
-        # Generar nombre único
+        # 1. Crear nombre único
         filename = f"{uuid.uuid4()}_{upload_file.filename}"
         
-        # Ruta completa del archivo en el disco
-        file_path = os.path.join(IMAGEDIR, filename)
+        # 2. Construir la ruta completa usando la variable que definimos arriba
+        file_path = os.path.join(IMAGES_DIR, filename)
         
-        # Guardar
+        # 3. Guardar el archivo
         with open(file_path, "wb") as buffer:
             shutil.copyfileobj(upload_file.file, buffer)
             
-        # Retornar la URL relativa para el navegador
-        return f"/static/images/{filename}"
+        print(f"✅ Imagen guardada en: {file_path}") # Esto saldrá en los logs de Render
         
+        # 4. Retornar la URL relativa web
+        return f"/static/images/{filename}"
+
     except Exception as e:
-        print(f"❌ ERROR AL GUARDAR IMAGEN: {e}")
+        print(f"❌ ERROR CRÍTICO GUARDANDO IMAGEN: {str(e)}") # <--- ESTO ES LO QUE QUEREMOS VER
+        # En vez de romper todo con un 500, devolvemos None y que el programa siga
         return None
 
 # ... después de crear la 'app' ...
