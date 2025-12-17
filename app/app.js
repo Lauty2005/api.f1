@@ -650,7 +650,7 @@ window.startEditingDriver = function (d) {
     document.getElementById('number').value = d.number; document.getElementById('birthDate').value = d.birth_date;
     editingDriverId = d.id; window.scrollTo({ top: 0, behavior: 'smooth' });
 };
-window.resetDriverForm = function () { if (dForm) dForm.reset(); editingDriverId = null; };
+window.resetDriverForm = function () { if (dForm) document.getElementById('driverForm').reset(); editingDriverId = null; };
 
 async function deleteDriver(id) {
     const result = await confirmDelete('¿Despedir Piloto?', 'Esta acción no se puede deshacer.');
