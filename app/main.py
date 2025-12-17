@@ -143,29 +143,33 @@ def get_db():
     finally: db.close()
 
 def save_upload_file(upload_file: UploadFile) -> str:
-    # Si no hay archivo, devolvemos None (sin error)
     if not upload_file or not upload_file.filename:
         return None
 
     try:
-        # 1. Crear nombre único
+        # 1. Asegurar que la carpeta exista JUSTO AHORA
+        # Usamos IMAGEDIR (que definimos al principio) o la ruta directa si fallara
+        target_dir = "static/images"
+        if not os.path.exists(target_dir):
+            os.makedirs(target_dir, exist_ok=True)
+
+        # 2. Crear nombre único
         filename = f"{uuid.uuid4()}_{upload_file.filename}"
         
-        # 2. Construir la ruta completa usando la variable que definimos arriba
-        file_path = os.path.join(IMAGES_DIR, filename)
+        # 3. Ruta completa
+        file_path = os.path.join(target_dir, filename)
         
-        # 3. Guardar el archivo
+        # 4. Guardar
         with open(file_path, "wb") as buffer:
             shutil.copyfileobj(upload_file.file, buffer)
             
-        print(f"✅ Imagen guardada en: {file_path}") # Esto saldrá en los logs de Render
+        print(f"✅ Imagen guardada en: {file_path}")
         
-        # 4. Retornar la URL relativa web
+        # 5. Retornar URL
         return f"/static/images/{filename}"
 
     except Exception as e:
-        print(f"❌ ERROR CRÍTICO GUARDANDO IMAGEN: {str(e)}") # <--- ESTO ES LO QUE QUEREMOS VER
-        # En vez de romper todo con un 500, devolvemos None y que el programa siga
+        print(f"❌ ERROR AL GUARDAR IMAGEN: {str(e)}")
         return None
 
 # ... después de crear la 'app' ...
