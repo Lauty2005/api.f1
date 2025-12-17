@@ -47,9 +47,91 @@ function translateTab(tab) {
     return '';
 }
 
-const API_BASE = 'http://127.0.0.1:8000/api';
+const API_BASE = '/api';
 let editingDriverId = null;
 const teamColors = { "Red Bull": "#0600EF", "Mercedes": "#00D2BE", "Ferrari": "#DC0000", "McLaren": "#FF8700", "Aston Martin": "#006F62", "Default": "#333" };
+
+// ================= SEGURIDAD Y PERSISTENCIA =================
+
+let isAdmin = false;
+
+// 1. FUNCIÓN QUE SE EJECUTA AL INICIAR LA PÁGINA
+document.addEventListener('DOMContentLoaded', () => {
+    // A. Recuperar Sesión de Admin
+    if (localStorage.getItem('f1_admin') === 'true') {
+        activarModoAdmin(false); // false = sin alerta de bienvenida
+    }
+
+    // B. Recuperar la última pestaña visitada
+    const lastTab = localStorage.getItem('f1_last_tab') || 'drivers';
+    showTab(lastTab); // Esta función ya la tienes, pero la haremos persistente
+});
+
+function toggleLogin() {
+    if (isAdmin) {
+        // CERRAR SESIÓN
+        isAdmin = false;
+        document.body.classList.remove('admin-mode');
+        localStorage.removeItem('f1_admin'); // <--- BORRAMOS EL RASTRO
+
+        // Visuales
+        const icon = document.querySelector('#loginBtn i');
+        icon.classList.remove('fa-unlock');
+        icon.classList.add('fa-lock');
+        document.getElementById('loginBtn').style.backgroundColor = 'white';
+        document.getElementById('loginBtn').style.color = '#333';
+
+        Swal.fire('Sesión Cerrada', 'Modo visitante.', 'info');
+    } else {
+        // ABRIR LOGIN
+        document.getElementById('loginModal').style.display = 'block';
+        setTimeout(() => document.getElementById('adminPassword').focus(), 100);
+    }
+}
+
+function checkLogin() {
+    const pass = document.getElementById('adminPassword').value;
+    
+    if (pass === "admin123") {
+        localStorage.setItem('f1_admin', 'true'); // <--- GUARDAMOS EL RASTRO
+        activarModoAdmin(true); // true = mostrar alerta
+        document.getElementById('loginModal').style.display = 'none';
+        document.getElementById('adminPassword').value = '';
+    } else {
+        Swal.fire('Error', 'Contraseña incorrecta.', 'error');
+    }
+}
+
+// Función auxiliar para activar los visuales de Admin
+function activarModoAdmin(showAlert) {
+    isAdmin = true;
+    document.body.classList.add('admin-mode');
+    
+    // Cambiar icono candado
+    const icon = document.querySelector('#loginBtn i');
+    if(icon) {
+        icon.classList.remove('fa-lock');
+        icon.classList.add('fa-unlock');
+    }
+    const btn = document.getElementById('loginBtn');
+    if(btn) {
+        btn.style.backgroundColor = '#4CAF50';
+        btn.style.color = 'white';
+    }
+
+    if (showAlert) {
+        Swal.fire({
+            icon: 'success',
+            title: '¡Acceso Concedido!',
+            timer: 1500,
+            showConfirmButton: false
+        });
+    }
+}
+
+document.getElementById('adminPassword').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') checkLogin();
+});
 
 document.addEventListener('DOMContentLoaded', () => {
     loadDrivers(); loadConstructors(); loadCircuits(); loadResults(); populateSelectors();
@@ -668,85 +750,3 @@ window.onclick = function (event) {
         modal.style.display = "none";
     }
 }
-
-// ================= SEGURIDAD Y PERSISTENCIA =================
-
-let isAdmin = false;
-
-// 1. FUNCIÓN QUE SE EJECUTA AL INICIAR LA PÁGINA
-document.addEventListener('DOMContentLoaded', () => {
-    // A. Recuperar Sesión de Admin
-    if (localStorage.getItem('f1_admin') === 'true') {
-        activarModoAdmin(false); // false = sin alerta de bienvenida
-    }
-
-    // B. Recuperar la última pestaña visitada
-    const lastTab = localStorage.getItem('f1_last_tab') || 'drivers';
-    showTab(lastTab); // Esta función ya la tienes, pero la haremos persistente
-});
-
-function toggleLogin() {
-    if (isAdmin) {
-        // CERRAR SESIÓN
-        isAdmin = false;
-        document.body.classList.remove('admin-mode');
-        localStorage.removeItem('f1_admin'); // <--- BORRAMOS EL RASTRO
-
-        // Visuales
-        const icon = document.querySelector('#loginBtn i');
-        icon.classList.remove('fa-unlock');
-        icon.classList.add('fa-lock');
-        document.getElementById('loginBtn').style.backgroundColor = 'white';
-        document.getElementById('loginBtn').style.color = '#333';
-
-        Swal.fire('Sesión Cerrada', 'Modo visitante.', 'info');
-    } else {
-        // ABRIR LOGIN
-        document.getElementById('loginModal').style.display = 'block';
-        setTimeout(() => document.getElementById('adminPassword').focus(), 100);
-    }
-}
-
-function checkLogin() {
-    const pass = document.getElementById('adminPassword').value;
-    
-    if (pass === "admin123") {
-        localStorage.setItem('f1_admin', 'true'); // <--- GUARDAMOS EL RASTRO
-        activarModoAdmin(true); // true = mostrar alerta
-        document.getElementById('loginModal').style.display = 'none';
-        document.getElementById('adminPassword').value = '';
-    } else {
-        Swal.fire('Error', 'Contraseña incorrecta.', 'error');
-    }
-}
-
-// Función auxiliar para activar los visuales de Admin
-function activarModoAdmin(showAlert) {
-    isAdmin = true;
-    document.body.classList.add('admin-mode');
-    
-    // Cambiar icono candado
-    const icon = document.querySelector('#loginBtn i');
-    if(icon) {
-        icon.classList.remove('fa-lock');
-        icon.classList.add('fa-unlock');
-    }
-    const btn = document.getElementById('loginBtn');
-    if(btn) {
-        btn.style.backgroundColor = '#4CAF50';
-        btn.style.color = 'white';
-    }
-
-    if (showAlert) {
-        Swal.fire({
-            icon: 'success',
-            title: '¡Acceso Concedido!',
-            timer: 1500,
-            showConfirmButton: false
-        });
-    }
-}
-
-document.getElementById('adminPassword').addEventListener('keypress', (e) => {
-    if (e.key === 'Enter') checkLogin();
-});

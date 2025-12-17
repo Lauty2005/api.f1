@@ -4,6 +4,7 @@ import uuid
 from fastapi import FastAPI, HTTPException, Depends, UploadFile, File, Form
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
 from pydantic import BaseModel
 from sqlalchemy import create_engine, Column, Integer, String, Date, Float, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
@@ -144,6 +145,25 @@ def save_upload_file(upload_file: UploadFile) -> str:
     # IMPORTANTE: Asegúrate de que este puerto (8000) sea el que usas
     return f"http://127.0.0.1:8000/static/images/{filename}"
 
+# ... después de crear la 'app' ...
+
+# 1. Servir la página principal
+@app.get("/")
+def read_root():
+    return FileResponse("index.html")
+
+# 2. Servir los estilos CSS
+@app.get("/style.css")
+def read_css():
+    return FileResponse("style.css")
+
+# 3. Servir el JavaScript
+@app.get("/app.js")
+def read_js():
+    return FileResponse("app.js")
+
+# ... luego siguen tus endpoints de la API (/api/drivers, etc) ...
+
 # --- ENDPOINTS ---
 @app.get("/api/drivers", response_model=List[DriverResponse])
 def get_drivers(db: Session = Depends(get_db)): return db.query(DriverDB).all()
@@ -239,8 +259,8 @@ def seed_data(db: Session = Depends(get_db)):
     db.commit()
     return {"message": "Datos de prueba insertados"}
 
-    # --- ENDPOINT NUEVO: HISTORIAL DE UN PILOTO ---
+# --- AGREGA ESTO EN main.py ---
+
 @app.get("/api/results/driver/{driver_id}", response_model=List[ResultResponse])
 def get_driver_results(driver_id: int, db: Session = Depends(get_db)):
-    # Buscamos todos los resultados de este piloto, ordenados por circuito (o fecha si tuviéramos)
     return db.query(ResultDB).filter(ResultDB.driver_id == driver_id).all()
