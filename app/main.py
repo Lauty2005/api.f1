@@ -143,7 +143,7 @@ def save_upload_file(upload_file: UploadFile) -> str:
     with open(file_path, "wb") as buffer:
         shutil.copyfileobj(upload_file.file, buffer)
     # IMPORTANTE: Asegúrate de que este puerto (8000) sea el que usas
-    return f"http://127.0.0.1:8000/static/images/{filename}"
+    return f"/static/images/{filename}"
 
 # ... después de crear la 'app' ...
 
