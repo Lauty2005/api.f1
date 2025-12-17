@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>F1 Manager Pro</title>
+    <link href="https://fonts.googleapis.com/css2?family=Titillium+Web:wght@300;400;700;900&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</head>
+
+<body>
+    <header>
+        <div class="container">
+            <h1>🏎️ F1 MANAGER PRO</h1>
+            <div class="tabs">
+                <button class="tab-btn active" onclick="showTab('drivers')">PILOTOS</button>
+                <button class="tab-btn" onclick="showTab('constructors')">CONSTRUCTORES</button>
+                <button class="tab-btn" onclick="showTab('circuits')">CIRCUITOS</button>
+                <button class="tab-btn" onclick="showTab('results')">RESULTADOS</button>
+                <button class="tab-btn" onclick="showTab('standings')">CLASIFICACIÓN</button>
+            </div>
+        </div>
+        <button id="loginBtn" class="btn-action" style="background:white; color:#333;" onclick="toggleLogin()"
+            title="Admin Login">
+            <i class="fa-solid fa-lock"></i>
+        </button>
+    </header>
+
+    <main class="container">
+        <div id="tab-drivers" class="tab-content active">
+            <section class="add-section">
+                <h2>Nuevo Piloto</h2>
+                <form id="driverForm">
+                    <div class="form-row">
+                        <div class="form-group"><label>Nombre</label><input type="text" id="firstName" required></div>
+                        <div class="form-group"><label>Apellido</label><input type="text" id="lastName" required></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><label>Escudería</label><input type="text" id="team" required></div>
+                        <div class="form-group"><label>País</label><input type="text" id="country" required></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><label>Nº Coche</label><input type="number" id="number" required></div>
+                        <div class="form-group"><label>Fecha Nac.</label><input type="date" id="birthDate" required>
+                        </div>
+                    </div>
+                    <div class="form-row" style="margin-top: 15px;">
+                        <div class="form-group">
+                            <label>Foto del Piloto (Archivo)</label>
+                            <input type="file" id="driverImage" accept="image/*">
+                        </div>
+                    </div>
+                    <button type="submit">Guardar Piloto</button>
+                </form>
+            </section>
+            <div class="search-container">
+                <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                <input type="text" id="searchDrivers" class="search-input" placeholder="Buscar piloto o escudería..."
+                    onkeyup="filterGrid('searchDrivers', 'drivers-grid')">
+            </div>
+            <div id="drivers-grid" class="grid"></div>
+        </div>
+
+        <div id="tab-constructors" class="tab-content" style="display: none;">
+            <section class="add-section">
+                <h2>Nueva Escudería</h2>
+                <form id="constructorForm">
+                    <div class="form-row">
+                        <div class="form-group"><label>Nombre Equipo</label><input type="text" id="consName" required>
+                        </div>
+                        <div class="form-group"><label>Jefe de Equipo</label><input type="text" id="consPrincipal"
+                                required></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><label>País Base</label><input type="text" id="consBase" required></div>
+                        <div class="form-group"><label>Logo (Archivo)</label><input type="file" id="consImage"
+                                accept="image/*" required></div>
+                    </div>
+                    <button type="submit">Guardar Escudería</button>
+                </form>
+            </section>
+
+            <div class="search-container">
+                <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                <input type="text" id="searchConstructors" class="search-input" placeholder="Buscar equipo..."
+                    onkeyup="filterGrid('searchConstructors', 'constructors-grid')">
+            </div>
+
+            <div id="constructors-grid" class="grid"></div>
+        </div>
+
+        <div id="tab-circuits" class="tab-content" style="display: none;">
+            <section class="add-section">
+                <h2>Nuevo Circuito</h2>
+                <form id="circuitForm">
+                    <div class="form-row">
+                        <div class="form-group"><label>Nombre</label><input type="text" id="circName"
+                                placeholder="Ej. Monza" required></div>
+                        <div class="form-group"><label>País</label><input type="text" id="circCountry" required></div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><label>Longitud (km)</label><input type="number" step="0.001"
+                                id="circLength" required></div>
+                        <div class="form-group"><label>Vueltas</label><input type="number" id="circLaps" required></div>
+                    </div>
+
+                    <div class="form-section-title">⏱️ Prácticas Libres</div>
+                    <div class="form-row">
+                        <div class="form-group"><label>FP1</label><input type="time" id="circFP1"></div>
+                        <div class="form-group"><label>FP2</label><input type="time" id="circFP2"></div>
+                        <div class="form-group"><label>FP3</label><input type="time" id="circFP3"></div>
+                    </div>
+
+                    <div class="form-section-title">🏁 Sesiones Oficiales</div>
+                    <div class="form-row">
+                        <div class="form-group"><label>Clasificación</label><input type="time" id="circQualy" required>
+                        </div>
+                        <div class="form-group"><label>Sprint Qualy</label><input type="time" id="circSprintQualy">
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group"><label>Sprint Race</label><input type="time" id="circSprint"></div>
+                        <div class="form-group"><label>Carrera Principal</label><input type="time" id="circRace"
+                                required></div>
+                    </div>
+
+                    <div class="form-row" style="margin-top: 15px;">
+                        <div class="form-group"><label>Mapa del Circuito (Archivo)</label><input type="file"
+                                id="circImage" accept="image/*" required></div>
+                    </div>
+
+                    <button type="submit">Guardar Circuito</button>
+                </form>
+            </section>
+            <div class="search-container">
+                <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                <input type="text" id="searchCircuits" class="search-input" placeholder="Buscar circuito o país..."
+                    onkeyup="filterGrid('searchCircuits', 'circuits-grid')">
+            </div>
+            <div id="circuits-grid" class="grid"></div>
+        </div>
+
+        <div id="tab-results" class="tab-content" style="display: none;">
+            <section class="add-section">
+                <h2>Registrar Resultados</h2>
+                <form id="resultForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Tipo</label>
+                            <select id="resType">
+                                <option value="Race">Carrera</option>
+                                <option value="Sprint">Sprint</option>
+                            </select>
+                        </div>
+                        <div class="form-group"><label>Circuito</label><select id="resCircuit"></select></div>
+                        <div class="form-group"><label>Piloto</label><select id="resDriver"></select></div>
+                        <div class="form-group"><label>Posición</label><input type="number" id="resPosition" min="1"
+                                max="20" required></div>
+                    </div>
+                    <button type="submit" style="background: #FF8700;">Registrar</button>
+                </form>
+            </section>
+            <div class="search-container">
+                <i class="fa-solid fa-magnifying-glass search-icon"></i>
+                <input type="text" id="searchResults" class="search-input"
+                    placeholder="Filtrar por piloto, circuito, equipo..."
+                    onkeyup="filterTable('searchResults', 'results-body')">
+            </div>
+            <div id="results-table-container" style="background:white; padding:20px; border-radius:10px;">
+                <table style="width:100%; text-align:left;">
+                    <thead>
+                        <tr>
+                            <th>Tipo</th>
+                            <th>Circuito</th>
+                            <th>Pos</th>
+                            <th>Pts</th>
+                            <th>Piloto</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody id="results-body"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <div id="tab-standings" class="tab-content" style="display: none;">
+            <div style="display:flex; gap:20px;">
+                <div style="flex:1; background:white; padding:20px; border-radius:10px;">
+                    <h3>🏆 Pilotos</h3>
+                    <table style="width:100%">
+                        <tbody id="standings-drivers"></tbody>
+                    </table>
+                </div>
+                <div style="flex:1; background:white; padding:20px; border-radius:10px;">
+                    <h3>🔧 Constructores</h3>
+                    <table style="width:100%">
+                        <tbody id="standings-constructors"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </main>
+    <div id="profileModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeModal()">&times;</span>
+
+            <div class="modal-header-profile" id="modalHeader">
+            </div>
+
+            <div class="stats-summary">
+                <div class="stat-box">
+                    <span id="statPoints">0</span>
+                    <label>Puntos</label>
+                </div>
+                <div class="stat-box">
+                    <span id="statWins">0</span>
+                    <label>Victorias</label>
+                </div>
+                <div class="stat-box">
+                    <span id="statPodiums">0</span>
+                    <label>Podios</label>
+                </div>
+            </div>
+
+            <h3 style="margin-top:20px; border-bottom:1px solid #eee;">Historial de Carreras</h3>
+            <div class="history-container">
+                <table style="width:100%; text-align:left; font-size:0.9rem;">
+                    <thead>
+                        <tr>
+                            <th>GP</th>
+                            <th>Sesión</th>
+                            <th>Pos</th>
+                            <th>Pts</th>
+                        </tr>
+                    </thead>
+                    <tbody id="modalHistoryBody">
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div id="loginModal" class="modal">
+        <div class="modal-content" style="max-width: 350px; text-align: center; padding: 30px;">
+            <span class="close-btn" onclick="document.getElementById('loginModal').style.display='none'">&times;</span>
+
+            <h2 style="color: #e10600; margin-top:0;">Acceso Admin</h2>
+            <p style="color:#666;">Ingresa la contraseña maestra.</p>
+
+            <input type="password" id="adminPassword" placeholder="Contraseña..."
+                style="width: 80%; margin: 15px 0; padding: 10px; border:1px solid #ccc; border-radius:5px;">
+
+            <button onclick="checkLogin()"
+                style="width: 100%; background: #e10600; color: white; padding: 12px; border: none; border-radius: 5px; cursor: pointer; font-weight:bold;">
+                DESBLOQUEAR SISTEMA
+            </button>
+        </div>
+    </div>
+    <script src="app.js"></script>
+</body>
+
+</html>
