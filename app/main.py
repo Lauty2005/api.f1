@@ -199,7 +199,45 @@ def create_driver(
 ):
     x = DriverDB(first_name=first_name, last_name=last_name, team=team, country=country, number=number, birth_date=birth_date)
     db.add(x); db.commit(); db.refresh(x); return x
-@app.delete("/api/drivers/{id}", status_code=204)
+
+# --- AGREGAR ESTO EN main.py PARA PODER EDITAR ---
+
+@app.post("/api/drivers/{id}")  # Usamos POST porque tu formulario envía POST
+def update_driver(
+    id: int,
+    first_name: str = Form(...),
+    last_name: str = Form(...),
+    team: str = Form(...),
+    country: str = Form(...),
+    number: int = Form(...),
+    birth_date: date = Form(...),
+    image: UploadFile = File(None), # La imagen es opcional al editar
+    db: Session = Depends(get_db)
+):
+    # 1. Buscar el piloto
+    driver = db.query(DriverDB).filter(DriverDB.id == id).first()
+    if not driver:
+        raise HTTPException(status_code=404, detail="Piloto no encontrado")
+    
+    # 2. Actualizar datos texto
+    driver.first_name = first_name
+    driver.last_name = last_name
+    driver.team = team
+    driver.country = country
+    driver.number = number
+    driver.birth_date = birth_date
+    
+    # 3. Si subieron foto nueva, actualizarla. Si no, dejar la vieja.
+    if image:
+        url = save_upload_file(image)
+        if url:
+            driver.image_url = url
+            
+    # 4. Guardar cambios
+    db.commit()
+    db.refresh(driver)
+    return driver
+
 def delete_driver(id: int, db: Session = Depends(get_db)):
     x=db.query(DriverDB).filter(DriverDB.id==id).first(); 
     if x: db.delete(x); db.commit()
