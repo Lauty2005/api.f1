@@ -650,7 +650,25 @@ window.startEditingDriver = function (d) {
     document.getElementById('number').value = d.number; document.getElementById('birthDate').value = d.birth_date;
     editingDriverId = d.id; window.scrollTo({ top: 0, behavior: 'smooth' });
 };
-window.resetDriverForm = function () { if (dForm) document.getElementById('driverForm').reset(); editingDriverId = null; };
+
+// Función para limpiar el formulario después de guardar
+window.resetDriverForm = function() {
+    // AQUÍ ESTABA EL ERROR: Cambiamos "dForm" por "document.getElementById..."
+    document.getElementById('driverForm').reset();
+    
+    // Restaurar el botón y el título
+    const btn = document.querySelector('#driverForm button[type="submit"]');
+    if(btn) btn.textContent = "Guardar Piloto";
+    
+    const title = document.querySelector('.add-section h2');
+    if(title) title.textContent = "Nuevo Piloto";
+    
+    // Limpiar variables globales de edición
+    editingDriverId = null;
+    
+    // Ocultar formulario si no es admin (opcional)
+    // if(!isAdmin) document.querySelector('.add-section').style.display = 'none';
+}
 
 async function deleteDriver(id) {
     const result = await confirmDelete('¿Despedir Piloto?', 'Esta acción no se puede deshacer.');
