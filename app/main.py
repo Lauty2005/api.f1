@@ -12,12 +12,15 @@ from sqlalchemy.orm import sessionmaker, Session, relationship
 from typing import List, Optional
 from datetime import date
 
-# --- CONFIGURACIÓN DE DIRECTORIOS ---
-IMAGEDIR = "static/images/"
+# Obtener la ruta exacta donde está este archivo main.py
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-# ¡ESTO ES NUEVO! Crea la carpeta si no existe para evitar errores
-if not os.path.exists(IMAGEDIR):
-    os.makedirs(IMAGEDIR)
+# Definir la carpeta de imágenes usando la ruta absoluta
+STATIC_DIR = os.path.join(BASE_DIR, "static")
+IMAGEDIR = os.path.join(STATIC_DIR, "images")
+
+# Crear las carpetas si no existen (Recursivo para asegurar)
+os.makedirs(IMAGEDIR, exist_ok=True)
 
 # --- CONFIGURACIÓN BASE DE DATOS ---
 SQLALCHEMY_DATABASE_URL = "sqlite:///./f1_database.db"
@@ -138,12 +141,26 @@ def get_db():
     finally: db.close()
 
 def save_upload_file(upload_file: UploadFile) -> str:
-    filename = f"{uuid.uuid4()}_{upload_file.filename}"
-    file_path = os.path.join(IMAGEDIR, filename)
-    with open(file_path, "wb") as buffer:
-        shutil.copyfileobj(upload_file.file, buffer)
-    # IMPORTANTE: Asegúrate de que este puerto (8000) sea el que usas
-    return f"/static/images/{filename}"
+    if not upload_file or not upload_file.filename:
+        return None
+    
+    try:
+        # Generar nombre único
+        filename = f"{uuid.uuid4()}_{upload_file.filename}"
+        
+        # Ruta completa del archivo en el disco
+        file_path = os.path.join(IMAGEDIR, filename)
+        
+        # Guardar
+        with open(file_path, "wb") as buffer:
+            shutil.copyfileobj(upload_file.file, buffer)
+            
+        # Retornar la URL relativa para el navegador
+        return f"/static/images/{filename}"
+        
+    except Exception as e:
+        print(f"❌ ERROR AL GUARDAR IMAGEN: {e}")
+        return None
 
 # ... después de crear la 'app' ...
 
