@@ -355,7 +355,7 @@ async function loadDrivers() {
         const json = JSON.stringify(d).replace(/"/g, '&quot;');
         const color = getTeamColor(d.team);
         // Usamos una imagen por defecto si no tiene foto
-        const imageUrl = d.image_url || "https://via.placeholder.com/150x150.png?text=No+Photo";
+        const imageUrl = d.image_url ? d.image_url : "https://placehold.co/150?text=Sin+Foto";
 
         grid.innerHTML += `
             <div class="driver-card" style="border-top:4px solid ${color}">
